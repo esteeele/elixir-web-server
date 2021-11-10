@@ -13,6 +13,32 @@ SendEvents.sendEvents(100)
 
 Will pointlessly send some random data from a HTTP client to a web server
 
+### Rover API 
+
+Can create a 'rover' that moves about with
+
+POST `/rover`
+```json
+{
+	"rover" : {
+		"posx" : 1,
+		"posy" : 1,
+		"name" : "fido"
+	}
+}
+```
+
+Then move it about with 
+
+POST `rover/{name}`
+```json
+{
+	"update" : "get_state|go_forward|turn_left"
+}
+```
+
+TODO: Error handling Elixir/Erlang style -> i.e. handle errors with pattern matching not in the Java way of worrying about everything that might break
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed

@@ -8,8 +8,6 @@ defmodule WebhookProcessor do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: WebhookProcessor.Worker.start_link(arg)
-      # {WebhookProcessor.Worker, arg}
 
       #https://github.com/emadb/rovex/blob/master/lib/application.ex use this to fix stupid registry issues
       Plug.Cowboy.child_spec(

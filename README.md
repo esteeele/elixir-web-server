@@ -1,6 +1,8 @@
 # WebhookProcessor
 
-**TODO: Add description**
+So despite the name this doesn't actually use any webhooks (yet, might try implementing that next)
+
+Just having a bit of fun/doing some more unfamiliar programming with Elixir/Erlang 
 
 ## Installation
 

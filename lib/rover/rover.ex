@@ -23,6 +23,15 @@ defmodule Rover do
     GenServer.call(pid, :get_state)
   end
 
+  def server_exists(server_id) do
+    server_atom = String.to_atom(server_id)
+    case (GenServer.whereis(server_atom)) do
+      nil -> {:not_found, server_atom}
+      _ -> {:ok, server_atom}
+    end
+  end
+
+  @spec go_forward(atom | pid | {atom, any} | {:via, atom, any}) :: any
   def go_forward(pid) do
     GenServer.call(pid, :go_forward)
   end
@@ -67,26 +76,3 @@ defmodule Rover do
       {:noreply, new_state}
   end
 end
-
-# iex(1)> {:ok, pid} = Rover.start_link({1,1,:N,"hello"})
-# {:ok, #PID<0.160.0>}
-# iex(2)> Rover.go_forward(pid)
-# {:ok, %Rover{direction: :N, name: "hello", x: 1, y: 2}}
-# iex(3)> Rover.get_state(pid)
-# {:ok, {1, 2, :N, "hello"}}
-# iex(4)> Rover.rotate_left(pid)
-# :ok
-# iex(5)> Rover.go_forward(pid)
-# {:ok, %Rover{direction: :W, name: "hello", x: 0, y: 2}}
-# iex(6)> Rover.get_state(pid)
-# {:ok, {0, 2, :W, "hello"}}
-# iex(7)> {:ok, rover_2_pid} = Rover.start_link({1,1,:N,"friend"})
-# {:ok, #PID<0.167.0>}
-# iex(8)> Rover.g
-# get_state/1     go_forward/1
-# iex(8)> Rover.go_forward(rover_2_pid)
-# {:ok, %Rover{direction: :N, name: "friend", x: 1, y: 2}}
-# iex(9)> Rover.get_state(rover_2_pid)
-# {:ok, {1, 2, :N, "friend"}}
-# iex(10)> Rover.get_state(:friend) #can be accessible by atom as well
-# {:ok, {1, 2, :N, "friend"}}

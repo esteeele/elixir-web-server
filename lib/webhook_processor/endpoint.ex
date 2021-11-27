@@ -25,7 +25,7 @@ defmodule WebhookProcessor.Endpoint do
   post "/rover" do
     {status, body} =
       case conn.body_params do
-        %{"rover" => rover} -> {200, initRover(rover)}
+        %{"rover" => rover} -> {201, initRover(rover)}
         _ -> {400, Poison.encode!(%{error: "Bad request"})}
       end
 
@@ -37,9 +37,17 @@ defmodule WebhookProcessor.Endpoint do
 
     {status, body} =
       case conn.body_params do
-        %{"update" => command} -> {200, handleCommand(command, conn.params["name"])}
+        %{"update" => command} -> handle_update(command, conn.params["name"])
         _ -> {400, Poison.encode!(%{error: "Bad request"})}
       end
+
+    send_resp(conn, status, Poison.encode!(body))
+  end
+
+  get "/rover/:name" do
+    IO.puts(conn.params["name"])
+
+    {status, body} = handle_get(conn.params["name"])
 
     send_resp(conn, status, Poison.encode!(body))
   end
@@ -55,22 +63,37 @@ defmodule WebhookProcessor.Endpoint do
     Poison.encode!(%{response: "Please Send Some Events!"})
   end
 
-  defp handleCommand(command, name) do
+  defp handle_get(name) do
+    exists = Rover.server_exists(name)
+    case exists do
+      {:not_found, _name} -> {404, name <> " NOT FOUND"}
+      {:ok, atom_name} ->
+        {:ok, rover} = Rover.get_state(atom_name)
+        {200, rover}
+    end
+  end
+
+  defp handle_update(command, name) do
     IO.puts("Handling")
-    case command do
-      "go_forward" ->
-        {:ok, rover} = Rover.go_forward(String.to_atom(name))
-        rover
+    exists = Rover.server_exists(name)
 
-      "turn_left" ->
-        Rover.rotate_left(String.to_atom(name))
-        "accepted" #async for some reason
+    case exists do
+      {:not_found, _atom_name} ->
+        {404, name <> " NOT FOUND"}
 
-      "get_state" ->
-        {:ok, rover} = Rover.get_state(String.to_atom(name))
-        rover
-      _ ->
-        "unknown"
+      {:ok, atom_name} ->
+        case command do
+          "go_forward" ->
+            {:ok, rover} = Rover.go_forward(atom_name)
+            {204, rover}
+
+          "turn_left" ->
+            Rover.rotate_left(atom_name)
+            # async for some reason
+            {204, "accepted"}
+          _ ->
+            "unknown"
+        end
     end
   end
 
